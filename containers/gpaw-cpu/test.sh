@@ -7,4 +7,4 @@ podman build \
   ${CACHE_ARGS} \
   ${BUILD_ARGS} \
   --target tester \
-  -t ${IMAGE_TAG}:tester .
+  .
