@@ -35,4 +35,4 @@ jobs:
       - name: Push images to GitHub Container Registry
         run: |
           source containers/gpaw-cpu/image_tag.sh
-          podman push ${IMAGE_TAG} ghcr.io/${{ github.repository }}:${IMAGE_TAG}
+          podman push ${IMAGE_TAG} ghcr.io/${{ github.repository }}/${IMAGE_TAG}
