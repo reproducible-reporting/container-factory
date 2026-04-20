@@ -9,3 +9,6 @@ podman build \
   ${BUILD_ARGS} \
   --target runner \
   -t ${IMAGE_TAG} .
+
+# Write the image tag to a file for later use
+echo "IMAGE_TAG=${IMAGE_TAG}" > image_tag.sh
