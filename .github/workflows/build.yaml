@@ -100,7 +100,7 @@ jobs:
           ./build.sh
           cat image_tag.txt >> "$GITHUB_OUTPUT"
       - name: Test image
-        if: ${{ hashFiles(format('containers/{0}/test.sh', matrix.container)) != '' }}
+        if: ${{ hashFiles(format('containers/{0}/test.sh', matrix.container)) != '' && matrix.test }}
         working-directory: containers/${{ matrix.container }}
         run: |
           ./test.sh

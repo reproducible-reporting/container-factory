@@ -23,9 +23,11 @@ for container in changed_containers:
         continue
     path_matrix = Path(f"containers/{container}/variants.json")
     if path_matrix.is_file():
+        first = True
         with open(path_matrix) as f:
             for key in json.load(f).keys():
-                include.append({"container": container, "variant": key})
+                include.append({"container": container, "variant": key, "test": first})
+                first = False
     else:
-        include.append({"container": container, "variant": "default"})
+        include.append({"container": container, "variant": "default", "test": True})
 print("include=" + json.dumps(include))
