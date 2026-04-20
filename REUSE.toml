@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# SPDX-License-Identifier: Apache-2.0
+
+version = 1
+
+[[annotations]]
+path = [
+    "uv.lock",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "© 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>"
+SPDX-License-Identifier = "Apache-2.0"

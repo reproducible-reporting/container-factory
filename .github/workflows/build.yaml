@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# SPDX-License-Identifier: Apache-2.0
+
+name: Build and Push Container Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+      - name: Check Podman version
+        run: podman --version
+      - name: Build image
+        run: |
+          cd containers/gpaw-25.7.0-cpu-2026.01/
+          ./build.sh
