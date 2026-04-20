@@ -7,6 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 
 ![License](https://img.shields.io/github/license/reproducible-reporting/container-factory)
 
+This container factory is used to build and maintain container images for the Reproducible Reporting project.
+See the [container-factory repository](https://github.com/reproducible-reporting/container-factory) for more details.
+
 ## Software requirements
 
 To work with this repository, you need to have the following software installed on your system:
@@ -15,8 +18,6 @@ To work with this repository, you need to have the following software installed 
 - [Git](https://git-scm.com/) for version control and collaboration.
 - [REUSE](https://reuse.software/) for managing licenses and ensuring compliance.
 - [Pre-commit](https://pre-commit.com/) for maintaining code quality and consistency.
-
-## Container build workflow
 
 ## License
 

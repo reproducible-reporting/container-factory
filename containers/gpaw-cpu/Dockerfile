@@ -3,6 +3,7 @@
 
 ARG GPAW_VERSION
 ARG PYTHON_VERSION
+ARG GCC_ARCH
 
 # ------- STAGE 1: The Base -------
 
@@ -40,6 +41,7 @@ ENV UV_PYTHON=/opt/venv/bin/python
 
 FROM base AS builder
 ARG GPAW_VERSION
+ARG GCC_ARCH
 
 # Copy the build requirements file
 COPY debian-packages-builder.txt /debian-packages-builder.txt
@@ -63,7 +65,11 @@ RUN echo "VIRTUAL_ENV=$VIRTUAL_ENV" && ls /opt/venv/bin/
 
 # Build and install the GPAW wheel
 COPY siteconfig.py /tmp/build/gpaw-${GPAW_VERSION}/siteconfig.py
-RUN uv pip install wheel==0.46.3 numpy==2.4.4 setuptools==82.0.1 ase==3.28.0 && \
+RUN export CFLAGS="-O3 -pipe -march=${GCC_ARCH}" && \
+    export CXXFLAGS="${CFLAGS}" && \
+    export FFLAGS="${CFLAGS}" && \
+    export FCFLAGS="${FFLAGS}" && \
+    uv pip install wheel==0.46.3 numpy==2.4.4 setuptools==82.0.1 ase==3.28.0 && \
     cd /tmp/build/gpaw-${GPAW_VERSION} && \
     uv build --wheel --out-dir ./dist --no-build-isolation && \
     cp -a dist /root/
@@ -72,9 +78,10 @@ RUN uv pip install wheel==0.46.3 numpy==2.4.4 setuptools==82.0.1 ase==3.28.0 && 
 
 FROM base AS runner
 ARG GPAW_VERSION
+ARG CPU_ARCH_TIER
 LABEL org.opencontainers.image.source="https://github.com/reproducible-reporting/container-factory" \
       org.opencontainers.image.title="gpaw-cpu" \
-      org.opencontainers.image.description="GPAW ${GPAW_VERSION} CPU runtime image"
+    org.opencontainers.image.description="GPAW ${GPAW_VERSION} CPU runtime image (${CPU_ARCH_TIER})"
 
 # Copy the run requirements file
 COPY debian-packages-runner.txt /debian-packages-runner.txt

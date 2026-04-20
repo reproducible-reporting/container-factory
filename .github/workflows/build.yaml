@@ -13,7 +13,7 @@ jobs:
   detect:
     runs-on: ubuntu-latest
     outputs:
-      containers: ${{ steps.detect.outputs.containers }}
+      include: ${{ steps.detect.outputs.include }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
@@ -29,32 +29,16 @@ jobs:
             BASE_SHA="${{ github.event.before }}"
             HEAD_SHA="${{ github.sha }}"
           fi
-
-          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          echo "Changed files between $BASE_SHA and $HEAD_SHA:"
-          printf '%s\n' "$CHANGED_FILES"
-
-          if printf '%s\n' "$CHANGED_FILES" | grep -qx '.github/workflows/build.yaml'; then
-            echo "Workflow file changed; rebuilding all containers."
-            DIRS=$(ls -d containers/*/ 2>/dev/null | awk -F'/' '{ print $2 }' | sort -u)
-          else
-            DIRS=$(printf '%s\n' "$CHANGED_FILES" \
-              | awk -F'/' '/^containers\/[^/]+\// { print $2 }' \
-              | sort -u)
-          fi
-          echo "Changed container directories:"
-          printf '%s\n' "$DIRS"
-
-          JSON=$(printf '%s\n' "$DIRS" | jq -R -s -c '[split("\n")[] | select(length > 0)]')
-          echo "containers=$JSON" >> "$GITHUB_OUTPUT"
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | python .github/matrix.py >> "$GITHUB_OUTPUT"
 
   build-push:
     needs: detect
-    if: needs.detect.outputs.containers != '[]'
+    if: needs.detect.outputs.include != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ${{ fromJson(needs.detect.outputs.containers) }}
+        include:
+          ${{ fromJson(needs.detect.outputs.include) }}
 
     steps:
       - name: Checkout Repository
@@ -87,10 +71,17 @@ jobs:
             echo "ERROR: build_id.txt contains '${NEW_ID}', which is not a non-negative integer."
             exit 1
           fi
-          OLD_ID=$(git show "HEAD^1:${BUILD_ID_FILE}" | tr -d '[:space:]')
-          if ! [[ "$OLD_ID" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: previous build_id.txt contains '${OLD_ID}', which is not a non-negative integer."
-            exit 1
+
+          if git cat-file -e "HEAD^1:${BUILD_ID_FILE}" 2>/dev/null; then
+            OLD_ID=$(git show "HEAD^1:${BUILD_ID_FILE}" | tr -d '[:space:]')
+            if ! [[ "$OLD_ID" =~ ^[0-9]+$ ]]; then
+              echo "ERROR: previous build_id.txt contains '${OLD_ID}', which is not a non-negative integer."
+              exit 1
+            fi
+          else
+            echo "No previous build_id.txt found. Skipping push."
+            echo "should_push=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           if [ "$NEW_ID" -eq "0" ]; then
@@ -106,6 +97,7 @@ jobs:
       - name: Build image
         id: build
         run: |
+          export VARIANT="${{ matrix.variant }}"
           cd containers/${{ matrix.container }}/
           ./build.sh
           cat image_tag.txt >> "$GITHUB_OUTPUT"
