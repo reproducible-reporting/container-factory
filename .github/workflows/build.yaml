@@ -123,5 +123,4 @@ jobs:
 #          IMAGE_TAG=${{ steps.build.outputs.image_tag }}
 #          gh api --method PATCH \
 #            "/orgs/${{ github.repository_owner }}/packages/container/${IMAGE_TAG}/visibility" \
-#            -f visibility=public; then
-#            echo "Set package visibility to public (org package): ${PACKAGE_NAME}"
+#            -f visibility=public
