@@ -25,9 +25,14 @@ jobs:
           echo "Changed files between ${{ github.event.before }} and ${{ github.sha }}:"
           printf '%s\n' "$CHANGED_FILES"
 
-          DIRS=$(printf '%s\n' "$CHANGED_FILES" \
-            | awk -F'/' '/^containers\/[^/]+\// { print $2 }' \
-            | sort -u)
+          if printf '%s\n' "$CHANGED_FILES" | grep -qx '.github/workflows/build.yaml'; then
+            echo "Workflow file changed; rebuilding all containers."
+            DIRS=$(ls -d containers/*/ 2>/dev/null | awk -F'/' '{ print $2 }' | sort -u)
+          else
+            DIRS=$(printf '%s\n' "$CHANGED_FILES" \
+              | awk -F'/' '/^containers\/[^/]+\// { print $2 }' \
+              | sort -u)
+          fi
           echo "Changed container directories:"
           printf '%s\n' "$DIRS"
 
