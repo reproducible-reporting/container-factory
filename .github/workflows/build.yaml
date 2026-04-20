@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 # SPDX-License-Identifier: Apache-2.0
 
-name: Build and Push Container Image
+name: Build and Push Container Images
 
 on:
   push:
@@ -9,8 +9,36 @@ on:
       - main
 
 jobs:
-  build-push:
+  detect:
     runs-on: ubuntu-latest
+    outputs:
+      containers: ${{ steps.detect.outputs.containers }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+      - name: Detect changed containers
+        id: detect
+        run: |
+          BEFORE="${{ github.event.before }}"
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            # First push to branch — build all containers
+            DIRS=$(ls -d containers/*/ 2>/dev/null | cut -d'/' -f2)
+          else
+            DIRS=$(git diff --name-only "$BEFORE" "${{ github.sha }}" \
+              | grep '^containers/' | cut -d'/' -f2 | sort -u)
+          fi
+          JSON=$(echo "$DIRS" | jq -R -s -c '[split("\n")[] | select(length > 0)]')
+          echo "containers=$JSON" >> "$GITHUB_OUTPUT"
+
+  build-push:
+    needs: detect
+    if: needs.detect.outputs.containers != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        container: ${{ fromJson(needs.detect.outputs.containers) }}
 
     steps:
       - name: Checkout Repository
@@ -22,20 +50,20 @@ jobs:
             cache
             !cache/**/partial
             !cache/**/auxfiles
-          key: single
+          key: ${{ matrix.container }}
       - name: Check Podman version
         run: podman --version
       - name: Build image
         run: |
-          cd containers/gpaw-cpu/
+          cd containers/${{ matrix.container }}/
           ./build.sh
       - name: Test image
         run: |
-          cd containers/gpaw-cpu/
+          cd containers/${{ matrix.container }}/
           ./test.sh
       - name: Login to GitHub Container Registry
         run: podman login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} ghcr.io
-      - name: Push images to GitHub Container Registry
+      - name: Push image to GitHub Container Registry
         run: |
-          source containers/gpaw-cpu/image_tag.sh
+          source containers/${{ matrix.container }}/image_tag.sh
           podman push ${IMAGE_TAG} ghcr.io/${{ github.repository }}/${IMAGE_TAG}
