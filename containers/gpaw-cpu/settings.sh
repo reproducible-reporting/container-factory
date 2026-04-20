@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 # SPDX-License-Identifier: Apache-2.0
 
+set -e
+
 GPAW_VERSION="25.7.0"
 PYTHON_VERSION="3.13"
 BUILD_ID=$(cat build_id.txt)

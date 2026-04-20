@@ -39,7 +39,9 @@ jobs:
       matrix:
         include:
           ${{ fromJson(needs.detect.outputs.include) }}
-
+    env:
+      VARIANT: ${{ matrix.variant }}
+      BUILD_ID_FILE: containers/${{ matrix.container }}/build_id.txt
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
@@ -61,9 +63,6 @@ jobs:
             echo "should_push=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
-          # Locate the build_id.txt file for the current container
-          BUILD_ID_FILE="containers/${{ matrix.container }}/build_id.txt"
 
           # Get and validate the Build IDs (must be a non-negative integer)
           NEW_ID=$(cat "$BUILD_ID_FILE" | tr -d '[:space:]')
@@ -96,15 +95,14 @@ jobs:
           fi
       - name: Build image
         id: build
+        working-directory: containers/${{ matrix.container }}
         run: |
-          export VARIANT="${{ matrix.variant }}"
-          cd containers/${{ matrix.container }}/
           ./build.sh
           cat image_tag.txt >> "$GITHUB_OUTPUT"
       - name: Test image
         if: ${{ hashFiles(format('containers/{0}/test.sh', matrix.container)) != '' }}
+        working-directory: containers/${{ matrix.container }}
         run: |
-          cd containers/${{ matrix.container }}/
           ./test.sh
       - name: Login to GitHub Container Registry
         if: steps.build_id.outputs.should_push == 'true'
