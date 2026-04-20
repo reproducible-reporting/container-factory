@@ -16,4 +16,4 @@ CACHE_ARGS="-v ${PWD}/../../cache/debian_trixie_amd64_deb:/var/cache/apt:rw,z \
 BUILD_ARGS="--build-arg GPAW_VERSION=${GPAW_VERSION} \
   --build-arg PYTHON_VERSION=${PYTHON_VERSION}"
 
-IMAGE_TAG="tovstra/gpaw-${GPAW_VERSION}:cpu:${BUILD_TS}"
+IMAGE_TAG="tovstra/gpaw-${GPAW_VERSION}-cpu:${BUILD_TS}"

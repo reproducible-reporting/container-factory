@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 source settings.sh
+echo ${IMAGE_TAG}
 podman build \
   ${CACHE_ARGS} \
   ${BUILD_ARGS} \
