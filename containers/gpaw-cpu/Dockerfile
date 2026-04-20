@@ -94,4 +94,4 @@ RUN ldd /opt/venv/lib/python3.13/site-packages/_gpaw.cpython-313-x86_64-linux-gn
 
 RUN gpaw test
 
-RUN mpiexec -n 4 --allow-run-as-root gpaw test
+RUN mpiexec -n 2 --allow-run-as-root gpaw test
