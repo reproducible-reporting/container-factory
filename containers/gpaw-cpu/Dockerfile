@@ -22,9 +22,10 @@ RUN mkdir -p /var/cache/apt /root/.cache && \
       > /etc/apt/apt.conf.d/01keep-debs && \
     rm -fv /etc/apt/apt.conf.d/docker-clean
 
-# Install the packages
+# Install the packages, clean up useless files with impractical permissions for cachging
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates curl python${PYTHON_VERSION}
+    apt-get install -y --no-install-recommends ca-certificates curl python${PYTHON_VERSION} && \
+    rm -rf /var/lib/apt/lists/partial /var/lib/apt/lists/auxfiles /var/cache/apt/archives/partial
 
 # Get uv.
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -44,7 +45,8 @@ ARG GPAW_VERSION
 COPY debian-packages-builder.txt /debian-packages-builder.txt
 
 # Install the packages
-RUN apt-get install -y --no-install-recommends $(grep -v '^#' /debian-packages-builder.txt)
+RUN apt-get install -y --no-install-recommends $(grep -v '^#' /debian-packages-builder.txt) && \
+    rm -rf /var/lib/apt/lists/partial /var/lib/apt/lists/auxfiles /var/cache/apt/archives/partial
 
 RUN mkdir -p /root/.cache/downloads && \
     DEST=/root/.cache/downloads/gpaw-${GPAW_VERSION}.tar.gz && \
@@ -75,7 +77,8 @@ ARG GPAW_VERSION
 COPY debian-packages-runner.txt /debian-packages-runner.txt
 
 # Install the packages
-RUN apt-get install -y --no-install-recommends $(grep -v '^#' /debian-packages-runner.txt)
+RUN apt-get install -y --no-install-recommends $(grep -v '^#' /debian-packages-runner.txt) && \
+    rm -rf /var/lib/apt/lists/partial /var/lib/apt/lists/auxfiles /var/cache/apt/archives/partial
 
 # Copy the built wheel from the builder stage
 COPY --from=builder /root/dist/ /root/dist/
