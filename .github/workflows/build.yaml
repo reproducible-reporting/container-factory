@@ -15,6 +15,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
+      - name: Cache downloads
+        uses: actions/cache@v5
+        with:
+          path: cache
+          key: single
       - name: Check Podman version
         run: podman --version
       - name: Build image
