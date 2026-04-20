@@ -21,14 +21,8 @@ jobs:
       - name: Detect changed containers
         id: detect
         run: |
-          BEFORE="${{ github.event.before }}"
-          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            # First push to branch — build all containers
-            DIRS=$(ls -d containers/*/ 2>/dev/null | cut -d'/' -f2)
-          else
-            DIRS=$(git diff --name-only "$BEFORE" "${{ github.sha }}" \
-              | grep '^containers/' | cut -d'/' -f2 | sort -u)
-          fi
+          DIRS=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" \
+            | grep '^containers/' | cut -d'/' -f2 | sort -u)
           JSON=$(echo "$DIRS" | jq -R -s -c '[split("\n")[] | select(length > 0)]')
           echo "containers=$JSON" >> "$GITHUB_OUTPUT"
       - name: Show changed containers
@@ -45,6 +39,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
       - name: Cache downloads
         uses: actions/cache@v5
         with:
@@ -55,17 +51,48 @@ jobs:
           key: ${{ matrix.container }}
       - name: Check Podman version
         run: podman --version
+      - name: Validate build ID
+        id: build_id
+        run: |
+          # Locate the build_id.txt file for the current container
+          BUILD_ID_FILE="containers/${{ matrix.container }}/build_id.txt"
+
+          # Get and validate the Build IDs (must be a non-negative integer)
+          NEW_ID=$(cat "$BUILD_ID_FILE" | tr -d '[:space:]')
+          if ! [[ "$NEW_ID" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: build_id.txt contains '${NEW_ID}', which is not a non-negative integer."
+            exit 1
+          fi
+          OLD_ID=$(git show "HEAD^1:${BUILD_ID_FILE}" | tr -d '[:space:]')
+          if ! [[ "$OLD_ID" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: previous build_id.txt contains '${OLD_ID}', which is not a non-negative integer."
+            exit 1
+          fi
+
+          if [ "$NEW_ID" -eq "0" ]; then
+            echo "Zero build ID detected. Skipping push."
+            echo "should_push=false" >> "$GITHUB_OUTPUT"
+          elif [ "$NEW_ID" -eq "$OLD_ID" ]; then
+            echo "Build ID unchanged (${OLD_ID}). Skipping push."
+            echo "should_push=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Build ID changed from ${OLD_ID} to ${NEW_ID}. Will push."
+            echo "should_push=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build image
         run: |
           cd containers/${{ matrix.container }}/
           ./build.sh
       - name: Test image
+        if: ${{ hashFiles(format('containers/{0}/test.sh', matrix.container)) != '' }}
         run: |
           cd containers/${{ matrix.container }}/
           ./test.sh
       - name: Login to GitHub Container Registry
+        if: steps.build_id.outputs.should_push == 'true'
         run: podman login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} ghcr.io
       - name: Push image to GitHub Container Registry
+        if: steps.build_id.outputs.should_push == 'true'
         run: |
           source containers/${{ matrix.container }}/image_tag.sh
           podman push ${IMAGE_TAG} ghcr.io/${{ github.repository }}/${IMAGE_TAG}
