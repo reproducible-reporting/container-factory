@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+#permissions:
+#  contents: read
+#  packages: write
+
 jobs:
   detect:
     runs-on: ubuntu-latest
@@ -93,9 +97,11 @@ jobs:
             echo "should_push=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Build image
+        id: build
         run: |
           cd containers/${{ matrix.container }}/
           ./build.sh
+          cat image_tag.txt >> "$GITHUB_OUTPUT"
       - name: Test image
         if: ${{ hashFiles(format('containers/{0}/test.sh', matrix.container)) != '' }}
         run: |
@@ -107,5 +113,15 @@ jobs:
       - name: Push image to GitHub Container Registry
         if: steps.build_id.outputs.should_push == 'true'
         run: |
-          source containers/${{ matrix.container }}/image_tag.sh
-          podman push ${IMAGE_TAG} ghcr.io/${{ github.repository }}/${IMAGE_TAG}
+          IMAGE_TAG=${{ steps.build.outputs.image_tag }}
+          podman push ${IMAGE_TAG} ghcr.io/${{ github.repository_owner }}/${IMAGE_TAG}
+#      - name: Make package public
+#        if: steps.build_id.outputs.should_push == 'true'
+#        env:
+#          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          IMAGE_TAG=${{ steps.build.outputs.image_tag }}
+#          gh api --method PATCH \
+#            "/orgs/${{ github.repository_owner }}/packages/container/${IMAGE_TAG}/visibility" \
+#            -f visibility=public; then
+#            echo "Set package visibility to public (org package): ${PACKAGE_NAME}"

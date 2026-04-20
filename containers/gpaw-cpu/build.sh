@@ -11,4 +11,4 @@ podman build \
   -t ${IMAGE_TAG} .
 
 # Write the image tag to a file for later use
-echo "IMAGE_TAG=${IMAGE_TAG}" > image_tag.sh
+echo "image_tag=${IMAGE_TAG}" > image_tag.sh
