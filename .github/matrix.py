@@ -10,6 +10,10 @@ containers/gpaw-cpu/settings.sh
 containers/gpaw-gpu/build_id.txt
 containers/random-file.txt
 EOF
+
+.github/matrix.py << EOF
+.github/matrix.py
+EOF
 """
 
 import json
@@ -20,9 +24,10 @@ changed_containers = set()
 
 build_all = False
 for line in sys.stdin:
+    line = line.strip()
     if line.startswith("containers/"):
         changed_containers.add(line.split("/")[1])
-    elif line.startswith(".github/matrix.py") or line.startswith(".github/workflows/build.yaml"):
+    elif line in [".github/matrix.py", ".github/workflows/build.yaml"]:
         build_all = True
         break
 
