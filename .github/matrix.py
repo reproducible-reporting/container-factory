@@ -16,7 +16,20 @@ import json
 import sys
 from pathlib import Path
 
-changed_containers = set(line.split("/")[1] for line in sys.stdin if line.startswith("containers/"))
+changed_containers = set()
+
+build_all = False
+for line in sys.stdin:
+    if line.startswith("containers/"):
+        changed_containers.add(line.split("/")[1])
+    elif line.startswith(".github/matrix.py") or line.startswith(".github/workflows/build.yaml"):
+        build_all = True
+        break
+
+if build_all:
+    for path in Path("containers").glob("*/build.sh"):
+        changed_containers.add(path.parent.name)
+
 include = []
 for container in changed_containers:
     if not Path(f"containers/{container}/build.sh").is_file():
