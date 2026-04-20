@@ -29,4 +29,5 @@ jobs:
         run: podman login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} ghcr.io
       - name: Push images to GitHub Container Registry
         run: |
-          podman push tovstra/gpaw-25.7.0-cpu-2026.01 ghcr.io/${{ github.repository }}:gpaw-25.7.0-cpu-2026.01
+          source containers/gpaw-cpu/settings.sh
+          podman push ${IMAGE_TAG} ghcr.io/${{ github.repository }}:${IMAGE_TAG}
