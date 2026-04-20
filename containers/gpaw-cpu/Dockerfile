@@ -72,6 +72,9 @@ RUN uv pip install wheel==0.46.3 numpy==2.4.4 setuptools==82.0.1 ase==3.28.0 && 
 
 FROM base AS runner
 ARG GPAW_VERSION
+LABEL org.opencontainers.image.source="https://github.com/reproducible-reporting/container-factory" \
+      org.opencontainers.image.title="gpaw-cpu" \
+      org.opencontainers.image.description="GPAW ${GPAW_VERSION} CPU runtime image"
 
 # Copy the run requirements file
 COPY debian-packages-runner.txt /debian-packages-runner.txt
