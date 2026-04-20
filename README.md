@@ -16,6 +16,8 @@ To work with this repository, you need to have the following software installed 
 - [REUSE](https://reuse.software/) for managing licenses and ensuring compliance.
 - [Pre-commit](https://pre-commit.com/) for maintaining code quality and consistency.
 
+## Container build workflow
+
 ## License
 
 All files in this repository are distributed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for more details.

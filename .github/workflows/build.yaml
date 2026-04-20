@@ -31,6 +31,8 @@ jobs:
           fi
           JSON=$(echo "$DIRS" | jq -R -s -c '[split("\n")[] | select(length > 0)]')
           echo "containers=$JSON" >> "$GITHUB_OUTPUT"
+      - name: Show changed containers
+        run: cat "$GITHUB_OUTPUT"
 
   build-push:
     needs: detect
