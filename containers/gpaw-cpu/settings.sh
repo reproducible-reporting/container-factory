@@ -21,4 +21,4 @@ BUILD_ARGS="--build-arg GPAW_VERSION=${GPAW_VERSION} \
   --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
   --build-arg GCC_ARCH=${GCC_ARCH}"
 
-IMAGE_TAG="gpaw-${GPAW_VERSION}-cpu:b${BUILD_ID}-${VARIANT}"
+IMAGE_TAG="gpaw-${GPAW_VERSION}-cpu:build${BUILD_ID}-${VARIANT}"
