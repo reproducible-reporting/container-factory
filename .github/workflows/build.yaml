@@ -19,5 +19,14 @@ jobs:
         run: podman --version
       - name: Build image
         run: |
-          cd containers/gpaw-25.7.0-cpu-2026.01/
+          cd containers/gpaw-cpu/
           ./build.sh
+      - name: Test image
+        run: |
+          cd containers/gpaw-cpu/
+          ./test.sh
+      - name: Login to GitHub Container Registry
+        run: podman login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} ghcr.io
+      - name: Push images to GitHub Container Registry
+        run: |
+          podman push tovstra/gpaw-25.7.0-cpu-2026.01 ghcr.io/${{ github.repository }}:gpaw-25.7.0-cpu-2026.01

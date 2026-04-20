@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 # SPDX-License-Identifier: Apache-2.0
 
-ARG GPAW_VERSION="25.7.0"
-ARG PYTHON_VERSION="3.13"
+ARG GPAW_VERSION
+ARG PYTHON_VERSION
 
 # ------- STAGE 1: The Base -------
 
