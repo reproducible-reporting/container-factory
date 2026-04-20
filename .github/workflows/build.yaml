@@ -21,9 +21,17 @@ jobs:
       - name: Detect changed containers
         id: detect
         run: |
-          DIRS=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" \
-            | grep '^containers/' | cut -d'/' -f2 | sort -u)
-          JSON=$(echo "$DIRS" | jq -R -s -c '[split("\n")[] | select(length > 0)]')
+          CHANGED_FILES=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}")
+          echo "Changed files between ${{ github.event.before }} and ${{ github.sha }}:"
+          printf '%s\n' "$CHANGED_FILES"
+
+          DIRS=$(printf '%s\n' "$CHANGED_FILES" \
+            | awk -F'/' '/^containers\/[^/]+\// { print $2 }' \
+            | sort -u)
+          echo "Changed container directories:"
+          printf '%s\n' "$DIRS"
+
+          JSON=$(printf '%s\n' "$DIRS" | jq -R -s -c '[split("\n")[] | select(length > 0)]')
           echo "containers=$JSON" >> "$GITHUB_OUTPUT"
       - name: Show changed containers
         run: cat "$GITHUB_OUTPUT"
