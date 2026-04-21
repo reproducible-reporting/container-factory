@@ -29,10 +29,6 @@ repos:
   hooks:
     - id: remove-crlf
       exclude_types: [binary]
-- repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.37.1
-  hooks:
-    - id: check-github-workflows
 - repo: https://github.com/hukkin/mdformat
   rev: 1.0.0
   hooks:

@@ -1,7 +1,12 @@
 # SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 # SPDX-License-Identifier: Apache-2.0
 
-# ruff: noqa
-fftw = True
-scalapack = True
-libraries += ["fftw3", "openblas", "xc", "scalapack-openmpi"]
+binutils
+build-essential
+bzip2
+gcc
+gcc-14
+libopenmpi-dev
+libtool
+openmpi-bin
+python3.13-dev

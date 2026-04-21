@@ -1,12 +1,17 @@
 # SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 # SPDX-License-Identifier: Apache-2.0
 
+cmake
+g++
+g++-14
 gcc
 gcc-14
-libfftw3-dev
-libopenblas-dev
-libscalapack-mpi-dev
-libscalapack-openmpi-dev
-libxc-dev
+gfortran
+gfortran-14
+libopenmpi-dev
+make
+meson
+ninja-build
 openmpi-bin
+pkg-config
 python3.13-dev

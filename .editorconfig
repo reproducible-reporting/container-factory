@@ -11,7 +11,7 @@ indent_style = space
 indent_size = 4
 max_line_length = 100
 
-[{*.json,*.yml,*.yaml,*.typ,*.tex,*.md}]
+[{*.json,*.md}]
 indent_style = space
 indent_size = 2
 

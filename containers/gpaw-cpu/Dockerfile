@@ -1,105 +1,72 @@
 # SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 # SPDX-License-Identifier: Apache-2.0
 
-ARG GPAW_VERSION
-ARG PYTHON_VERSION
 ARG GCC_ARCH
 
-# ------- STAGE 1: The Base -------
+# ------- STAGE 1: The Builder -------
 
-# Use a stripped-down Debian to start
-FROM debian:13.4-slim AS base
-ARG PYTHON_VERSION
-
-# Set environment variables that persist in the image
-ENV UV_NO_MANAGED_PYTHON=1 \
-    UV_PYTHON=/usr/bin/python${PYTHON_VERSION} \
-    VIRTUAL_ENV=/opt/venv \
-    PATH="/root/.local/bin:/opt/venv/bin:$PATH"
-
-# Configure caches and create mount points
-RUN mkdir -p /var/cache/apt /root/.cache && \
-    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' \
-      > /etc/apt/apt.conf.d/01keep-debs && \
-    rm -fv /etc/apt/apt.conf.d/docker-clean
-
-# Install the packages, clean up useless files with impractical permissions for cachging
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates curl python${PYTHON_VERSION} && \
-    rm -rf /var/lib/apt/lists/partial /var/lib/apt/lists/auxfiles /var/cache/apt/archives/partial
-
-# Get uv.
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Create a venv
-RUN uv venv /opt/venv
-
-# Set the new Python version to help uv find it
-ENV UV_PYTHON=/opt/venv/bin/python
-
-# ------- STAGE 2: The Builder -------
-
-FROM base AS builder
-ARG GPAW_VERSION
-ARG GCC_ARCH
+FROM localhost/numlib:v13.4-b1-${GCC_ARCH} AS builder
+ARG NAME
 
 # Copy the build requirements file
-COPY debian-packages-builder.txt /debian-packages-builder.txt
+COPY containers/${NAME}/static/debian-packages-builder.txt /tmp/debian-packages-builder.txt
+COPY static/download.sh /tmp/download.sh
 
 # Install the packages
-RUN apt-get install -y --no-install-recommends $(grep -v '^#' /debian-packages-builder.txt) && \
+RUN apt-get install -y --no-install-recommends $(grep -v '^#' /tmp/debian-packages-builder.txt) && \
     rm -rf /var/lib/apt/lists/partial /var/lib/apt/lists/auxfiles /var/cache/apt/archives/partial
 
-RUN mkdir -p /root/.cache/downloads && \
-    DEST=/root/.cache/downloads/gpaw-${GPAW_VERSION}.tar.gz && \
-    if [ ! -s "$DEST" ]; then \
-      curl -vfL \
-        "https://pypi.io/packages/source/g/gpaw/gpaw-${GPAW_VERSION}.tar.gz" \
-        -o "$DEST.tmp" && \
-      mv "$DEST.tmp" "$DEST"; \
-    fi && \
-    mkdir -p /tmp/build && \
-    tar -xzf "$DEST" -C /tmp/build
+# Download LibXC
+ARG LIBXC_VERSION
+RUN /tmp/download.sh "https://gitlab.com/libxc/libxc/-/archive/${LIBXC_VERSION}/libxc-${LIBXC_VERSION}.tar.bz2"
 
-RUN echo "VIRTUAL_ENV=$VIRTUAL_ENV" && ls /opt/venv/bin/
+# Build and install LibXC
+RUN tar -xjf /root/.cache/downloads/libxc-${LIBXC_VERSION}.tar.bz2 -C /tmp/build && \
+    cd /tmp/build/libxc-${LIBXC_VERSION} && \
+    ([ -f configure ] || autoreconf -i) && \
+    ./configure --prefix=/opt --enable-shared --disable-static --disable-fortran && \
+    make -j && \
+    make install
+
+# Download the GPAW source code
+ARG GPAW_VERSION
+RUN /tmp/download.sh "https://pypi.io/packages/source/g/gpaw/gpaw-${GPAW_VERSION}.tar.gz"
 
 # Build and install the GPAW wheel
-COPY siteconfig.py /tmp/build/gpaw-${GPAW_VERSION}/siteconfig.py
-RUN export CFLAGS="-O3 -pipe -march=${GCC_ARCH}" && \
-    export CXXFLAGS="${CFLAGS}" && \
-    export FFLAGS="${CFLAGS}" && \
-    export FCFLAGS="${FFLAGS}" && \
-    uv pip install wheel==0.46.3 numpy==2.4.4 setuptools==82.0.1 ase==3.28.0 && \
+COPY containers/${NAME}/static/siteconfig.py /tmp/build/gpaw-${GPAW_VERSION}/siteconfig.py
+RUN tar -xzf /root/.cache/downloads/gpaw-${GPAW_VERSION}.tar.gz -C /tmp/build && \
     cd /tmp/build/gpaw-${GPAW_VERSION} && \
-    uv build --wheel --out-dir ./dist --no-build-isolation && \
-    cp -a dist /root/
+    uv pip install --reinstall numpy==2.4.4 && \
+    uv pip install wheel==0.46.3 setuptools==82.0.1 ase==3.28.0 && \
+    uv build --wheel --out-dir /tmp/dist --no-build-isolation
 
-# ------- STAGE 3: The Runner -------
+# ------- STAGE 2: The Runner -------
 
-FROM base AS runner
-ARG GPAW_VERSION
-ARG CPU_ARCH_TIER
+FROM localhost/numlib:v13.4-b1-${GCC_ARCH} AS runner
+ARG NAME GPAW_VERSION
 LABEL org.opencontainers.image.source="https://github.com/reproducible-reporting/container-factory" \
-      org.opencontainers.image.title="gpaw-cpu" \
-    org.opencontainers.image.description="GPAW ${GPAW_VERSION} CPU runtime image (${CPU_ARCH_TIER})"
+      org.opencontainers.image.title=${NAME} \
+      org.opencontainers.image.description="GPAW ${GPAW_VERSION} CPU runtime image (${GCC_ARCH})"
 
 # Copy the run requirements file
-COPY debian-packages-runner.txt /debian-packages-runner.txt
+COPY containers/${NAME}/static/debian-packages-runner.txt /debian-packages-runner.txt
 
 # Install the packages
 RUN apt-get install -y --no-install-recommends $(grep -v '^#' /debian-packages-runner.txt) && \
     rm -rf /var/lib/apt/lists/partial /var/lib/apt/lists/auxfiles /var/cache/apt/archives/partial
 
-# Copy the built wheel from the builder stage
-COPY --from=builder /root/dist/ /root/dist/
+# Copy the build artifacts
+COPY --from=builder /tmp/dist/ /tmp/dist/
+COPY --from=builder /opt/include/ /opt/include/
+COPY --from=builder /opt/lib/ /opt/lib/
 
 # Show wheel file
-RUN ls -l /root/dist/*.whl
+RUN ls -l /tmp/dist/*.whl
 
 # Install the GPAW wheel
-RUN uv pip install numpy==2.4.4 ase==3.28.0 /root/dist/*.whl
+RUN uv pip install numpy==2.4.4 ase==3.28.0 /tmp/dist/*.whl
 
-# ------- STAGE 4: Testing -------
+# ------- STAGE 3: Testing -------
 
 FROM runner AS tester
 

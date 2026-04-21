@@ -3,9 +3,14 @@
 
 set -e
 
-: ${GCC_ARCH:="x86-64-v2"}
-LIBXC_VERSION="7.0.0"
-GPAW_VERSION="${VERSION}"
+: ${GCC_ARCH:="x86-64-v4"}
+DEBIAN_VERSION="${VERSION}"
+PYTHON_VERSION="3.13"
+OPENBLAS_VERSION="0.3.32"
+SCALAPACK_VERSION="2.2.0"
+FFTW_VERSION="3.3.10"
+NUMPY_VERSION="2.4.4"
+SCIPY_VERSION="1.17.1"
 
 mkdir -p cache/debian_trixie_amd64_deb
 mkdir -p cache/debian_trixie_amd64_lists
@@ -21,6 +26,11 @@ PODMAN_BUILD_ARGS="
   $PODMAN_RUN_ARGS \
   --build-arg NAME=${NAME} \
   --build-arg GCC_ARCH=${GCC_ARCH} \
-  --build-arg LIBXC_VERSION=${LIBXC_VERSION} \
-  --build-arg GPAW_VERSION=${GPAW_VERSION}
+  --build-arg DEBIAN_VERSION=${DEBIAN_VERSION} \
+  --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
+  --build-arg OPENBLAS_VERSION=${OPENBLAS_VERSION} \
+  --build-arg SCALAPACK_VERSION=${SCALAPACK_VERSION} \
+  --build-arg FFTW_VERSION=${FFTW_VERSION}
+  --build-arg NUMPY_VERSION=${NUMPY_VERSION} \
+  --build-arg SCIPY_VERSION=${SCIPY_VERSION}
 "

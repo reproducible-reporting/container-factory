@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 # SPDX-License-Identifier: Apache-2.0
 
-libfftw3-bin
-libopenblas0
-libscalapack-openmpi2.2
-libxc9
+libgfortran5
+libgomp1
 openmpi-bin

@@ -1,0 +1,18 @@
+{
+  "version": "25.7.0",
+  "build_id": 1,
+  "inp": [
+    "../../static/download.sh"
+  ],
+  "variants": {
+    "x86-64-v2": {
+      "GCC_ARCH": "x86-64-v2"
+    },
+    "x86-64-v3": {
+      "GCC_ARCH": "x86-64-v3"
+    },
+    "x86-64-v4": {
+      "GCC_ARCH": "x86-64-v4"
+    }
+  }
+}
