@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# SPDX-License-Identifier: Apache-2.0
+
+ase==3.28.0
+cuequivariance==0.9.1
+cuequivariance-torch==0.9.1
+cuequivariance-ops-cu12==0.9.1
+cuequivariance-ops-torch-cu12==0.9.1
+mace-torch==0.3.15
+torch==2.10.0

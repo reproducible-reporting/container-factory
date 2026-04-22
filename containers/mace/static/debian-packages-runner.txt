@@ -1,0 +1,5 @@
+# SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# SPDX-License-Identifier: Apache-2.0
+
+libgfortran5
+libgomp1

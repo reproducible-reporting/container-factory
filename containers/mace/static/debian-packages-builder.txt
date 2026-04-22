@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# SPDX-License-Identifier: Apache-2.0
+
+binutils
+build-essential
+gcc
+gcc-14
+libtool
+python3.13-dev

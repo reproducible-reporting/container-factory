@@ -8,7 +8,7 @@ ARG GCC_ARCH
 FROM localhost/numlib:v13.4-b1-${GCC_ARCH} AS builder
 ARG NAME
 
-# Copy the build requirements file
+# Copy some auxiliary files
 COPY containers/${NAME}/static/debian-packages-builder.txt /tmp/debian-packages-builder.txt
 COPY static/download.sh /tmp/download.sh
 

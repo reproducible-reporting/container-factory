@@ -5,8 +5,7 @@ set -e
 
 : ${GCC_ARCH:="x86-64-v2"}
 : ${CUDA_VERSION:="12"}
-MACE_VERSION="${VERSION}"
-ASE_VERSION="3.28.0"
+PLUMED_VERSION="2.10.0"
 
 mkdir -p cache/root_amd64
 
@@ -16,4 +15,5 @@ PODMAN_BUILD_ARGS="
   $PODMAN_RUN_ARGS \
   --build-arg NAME=${NAME} \
   --build-arg GCC_ARCH=${GCC_ARCH}
+  --build-arg PLUMED_VERSION=${PLUMED_VERSION}
 "
