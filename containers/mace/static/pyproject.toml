@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: © 2026 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# SPDX-License-Identifier: Apache-2.0
+
+[project]
+name = "mace-venv"
+version = "0.1.0"
+description = "Define a venv for MACE."
+dependencies = [
+    "ase==3.28.0",
+    "cuequivariance==0.9.1",
+    "cuequivariance-torch==0.9.1",
+    "cuequivariance-ops-cu12==0.9.1",
+    "cuequivariance-ops-torch-cu12==0.9.1",
+    "mace-torch==0.3.15",
+    "plumed==2.10.0",
+    "torch==2.10.0",
+]
+requires-python = ">=3.12"
+
+[tool.uv]
+package = false
+constraints = [
+    "nvidia-cuda-cupti < 13.0",
+    "nvidia-cuda-nvrtc < 13.0",
+    "nvidia-cuda-runtime < 13.0",
+    "nvidia-nccl-cu13 < 0a0",
+    "nvidia-cudnn-cu13 < 0a0",
+    "nvidia-cusparselt-cu13 < 0a0",
+    "nvidia-nvshmem-cu13 < 0a0",
+]

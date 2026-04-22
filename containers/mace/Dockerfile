@@ -6,13 +6,15 @@ ARG GCC_ARCH
 # ------- STAGE 1: The Runner -------
 
 FROM localhost/numlib:v13.4-b1-${GCC_ARCH} AS runner
-ARG NAME MACE_VERSION CUDA_VERSION ASE_VERSION
+ARG NAME
 LABEL org.opencontainers.image.source="https://github.com/reproducible-reporting/container-factory" \
       org.opencontainers.image.title=${NAME} \
-    org.opencontainers.image.description="MACE ${MACE_VERSION} (CUDA ${CUDA_VERSION}, ASE ${ASE_VERSION})"
+      org.opencontainers.image.description="MACE"
 
 # Install MACE
-RUN uv pip install mace_torch[wandb,cueq-cuda-${CUDA_VERSION}]==${MACE_VERSION} ase==${ASE_VERSION}
+COPY containers/${NAME}/static/pyproject.toml /tmp/pyproject.toml
+RUN cd tmp && \
+  uv pip install .
 
 # ------- STAGE 2: Testing -------
 

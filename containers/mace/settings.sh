@@ -15,8 +15,5 @@ PODMAN_RUN_ARGS="-v ${PWD}/cache/root_amd64:/root/.cache:rw,z"
 PODMAN_BUILD_ARGS="
   $PODMAN_RUN_ARGS \
   --build-arg NAME=${NAME} \
-  --build-arg GCC_ARCH=${GCC_ARCH} \
-  --build-arg CUDA_VERSION=${CUDA_VERSION} \
-  --build-arg MACE_VERSION=${MACE_VERSION} \
-  --build-arg ASE_VERSION=${ASE_VERSION}
+  --build-arg GCC_ARCH=${GCC_ARCH}
 "
